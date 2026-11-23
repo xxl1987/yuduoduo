@@ -116,8 +116,8 @@
     $('#page-title').textContent = META[p][0];
     $('#page-subtitle').textContent = META[p][1];
     $$('[data-page]').forEach(function (b) { b.classList.toggle('active', b.dataset.page === p); });
-    window.scrollTo({ top: 0, behavior: 'smooth' });
     render();
+    window.scrollTo({ top: 0, behavior: 'auto' });
   }
 
   function renderTopStats() {
@@ -1143,6 +1143,7 @@
     else if (act === 'diagnose') showDiagnosis();
     else if (act === 'drill-generate') generateDrill();
     else if (act === 'diagnosis-history') showDiagnosisHistory(Number(t.dataset.i));
+    else if (act === 'back-top') window.scrollTo({ top: 0, behavior: 'smooth' });
     else if (act === 'report') showReport();
     else if (act === 'report-ai') generateReportAI();
     else if (act === 'print-report') window.print();
@@ -1151,6 +1152,10 @@
   document.addEventListener('input', function (e) {
     if (e.target.id === 'essay-content') { updateCharCount(); lastAIReview = null; }
   });
+  window.addEventListener('scroll', function () {
+    const btn = $('#back-top');
+    if (btn) btn.hidden = window.scrollY < 300;
+  }, { passive: true });
   document.addEventListener('change', function (e) {
     if (e.target.id === 'ai-preset') {
       const p = AIHelper.PRESETS[e.target.value];

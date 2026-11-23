@@ -388,6 +388,14 @@ input, textarea { font-family: inherit; outline: none; }
 .modal-box p { font-size: 13.5px; color: var(--ink-2); line-height: 1.8; }
 .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 22px; }
 .toast { position: fixed; bottom: 34px; left: 50%; transform: translateX(-50%); background: var(--ink); color: #fff; padding: 11px 22px; border-radius: 30px; font-size: 13px; z-index: 200; box-shadow: 0 8px 24px rgba(0,0,0,.2); animation: pop .2s ease; }
+.back-top {
+  position: fixed; right: 16px; bottom: 92px; z-index: 45;
+  width: 44px; height: 44px; border-radius: 50%;
+  background: var(--primary); color: #fff; font-size: 22px; font-weight: 700;
+  box-shadow: 0 6px 18px rgba(124,131,253,.42); transition: .2s;
+}
+.back-top:hover { background: var(--primary-dark); transform: translateY(-2px); }
+@media (min-width: 901px) { .back-top { bottom: 28px; } }
 
 /* ============ 响应式 ============ */
 @media (max-width: 1100px) {
@@ -397,36 +405,63 @@ input, textarea { font-family: inherit; outline: none; }
 @media (max-width: 900px) {
   .sidebar { display: none; }
   .topbar { padding: 0 20px; height: 70px; }
-  .page-container { padding: 20px 18px 90px; }
+  .page-container { padding: 20px 18px 90px; scroll-behavior: smooth; }
   .mobile-tabbar {
     display: flex; position: fixed; bottom: 0; left: 0; right: 0; z-index: 50;
     background: rgba(255,255,255,.96); backdrop-filter: blur(10px);
     border-top: 1px solid var(--line); padding: 6px 4px calc(6px + env(safe-area-inset-bottom));
     justify-content: space-around; box-shadow: 0 -4px 20px rgba(84,92,160,.06);
   }
-  .tab-item { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 12px; color: var(--ink-3); font-size: 19px; border-radius: 10px; }
+  .tab-item { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 14px; min-width: 56px; color: var(--ink-3); font-size: 19px; border-radius: 10px; }
   .tab-item small { font-size: 10px; }
   .tab-item.active { color: var(--primary); background: var(--primary-soft); }
   .stat-grid { grid-template-columns: repeat(2, 1fr); }
-  .badge-grid { grid-template-columns: repeat(2, 1fr); }
+  .badge-grid { grid-template-columns: repeat(3, 1fr); }
   .growth-top { grid-template-columns: repeat(3, 1fr); }
+  .section-title { margin: 22px 0 12px; }
+  .section-title h2 { font-size: 16px; }
+  .card { padding: 18px; }
+  .stat-card { padding: 14px 12px; gap: 9px; }
+  .stat-ico { width: 38px; height: 38px; font-size: 18px; }
 }
 @media (max-width: 620px) {
-  .hero { padding: 22px; flex-direction: column; align-items: flex-start; gap: 16px; }
-  .hero h2 { font-size: 21px; }
-  .hero-badge { width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; }
+  html, body { -webkit-overflow-scrolling: touch; overscroll-behavior-y: contain; }
+  .topbar { height: 62px; padding: 0 14px; }
+  .topbar-left h1 { font-size: 17px; }
+  .topbar-left p { display: none; }
+  .stat-chip { padding: 5px 9px; font-size: 12px; }
+  .avatar { width: 32px; height: 32px; font-size: 18px; }
+  .page-container { padding: 14px 12px 96px; }
+  .hero { padding: 17px 18px; flex-direction: row; align-items: center; gap: 10px; border-radius: 17px; }
+  .hero-text { flex: 1; min-width: 0; }
+  .hero-greeting { font-size: 11px; }
+  .hero h2 { font-size: 17px; margin: 3px 0 5px; }
+  .hero p { font-size: 11.5px; line-height: 1.55; }
+  .hero-badge { min-width: 76px; padding: 10px 8px; border-radius: 12px; flex-shrink: 0; }
+  .hero-badge strong { font-size: 23px; }
+  .hero-badge span { font-size: 10px; }
   .module-grid, .material-grid { grid-template-columns: 1fr; }
   .side-panel { grid-template-columns: 1fr; }
-  .quiz-card, .article-card { padding: 18px; }
-  .article-card { padding: 20px 16px; }
-  .article-body p { font-size: 14.5px; }
-  .topbar-left h1 { font-size: 18px; }
-  .topbar-left p { display: none; }
-  .stat-chip { padding: 6px 10px; }
-  .avatar { width: 34px; height: 34px; }
-  .growth-top { grid-template-columns: 1fr; }
+  .quiz-card, .article-card { padding: 16px; }
+  .article-card { padding: 18px 14px; }
+  .article-body p { font-size: 14px; line-height: 2; }
+  .section-title { margin: 18px 0 10px; }
+  .stat-grid { gap: 9px; }
+  .stat-card { padding: 12px 10px; }
+  .stat-card b { font-size: 18px; }
+  .growth-top { gap: 9px; }
+  .growth-stat { padding: 13px 5px; }
+  .growth-stat .gi { font-size: 23px; }
+  .growth-stat b { font-size: 20px; }
+  .badge-grid { grid-template-columns: repeat(2, 1fr); gap: 9px; }
+  .badge-item { padding: 12px 6px; }
   .bar-chart { gap: 5px; }
   .report-grid { grid-template-columns: repeat(2, 1fr) !important; }
+  .tabs, .sub-tabs { gap: 6px; margin-bottom: 14px; }
+  .tab-btn, .sub-tab { padding: 8px 12px; font-size: 12.5px; }
+  .task-item { padding: 12px 13px; gap: 10px; }
+  .module-card { padding: 15px; }
+  .module-card .m-ico { font-size: 23px; }
 }
 
 /* ============ 学情画像 ============ */
