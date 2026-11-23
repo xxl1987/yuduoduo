@@ -133,6 +133,7 @@
     else if (page === 'writing') renderWriting();
     else if (page === 'growth') renderGrowth();
     else if (page === 'drill') renderDrill();
+    hwSetup();
   }
 
   /* ---------------- 首页 ---------------- */
@@ -240,7 +241,7 @@
     }
     const list = cfg.list.map(function (q) { return Object.assign({}, q); });
     // 固定顺序，方便复习；选择题选项不打乱以免答案含义变化
-    quiz = { type: type, context: context, name: cfg.name, list: list, i: 0, correct: 0, answered: false, wrong: [], tip: cfg.tip };
+    quiz = { type: type, context: context, name: cfg.name, list: list, i: 0, correct: 0, answered: false, wrong: [], tip: cfg.tip, hwPendingAnswer: false, hwImage: '' };
     render();
   }
 
@@ -249,14 +250,19 @@
     return q.opts[q.a];
   }
 
-  function submitAnswer(value) {
+  function submitAnswer(value, selfCheck) {
     if (!quiz || quiz.answered) return;
     const q = quiz.list[quiz.i];
     let ok;
     if (q.fill) {
-      const user = String(value || '').trim().replace(/\s/g, '');
-      ok = user === q.a.replace(/\s/g, '');
-      q.userAnswer = String(value || '').trim();
+      if (selfCheck === true || selfCheck === false) {
+        ok = selfCheck;
+        q.userAnswer = '手写';
+      } else {
+        const user = String(value || '').trim().replace(/\s/g, '');
+        ok = user === q.a.replace(/\s/g, '');
+        q.userAnswer = String(value || '').trim();
+      }
     } else {
       ok = Number(value) === q.a;
     }
@@ -270,11 +276,98 @@
     renderQuizArea();
   }
 
+  /* 手写板：田字格中用手指/鼠标书写，写完自评对照 */
+  let handwritingMode = localStorage.getItem('yuduoduo_handwriting') !== '0';
+  let hwStrokes = [];
+  let hwDrawing = false;
+  let hwCanvasEl = null;
+
+  function hwSetup() {
+    const cv = $('#hw-canvas');
+    if (!cv) { hwCanvasEl = null; hwStrokes = []; return; }
+    hwCanvasEl = cv;
+    hwStrokes = [];
+    const wrap = cv.parentElement;
+    const rect = wrap.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    cv.width = rect.width * dpr;
+    cv.height = rect.height * dpr;
+    const ctx = cv.getContext('2d');
+    ctx.scale(dpr, dpr);
+    ctx.lineWidth = 3.2;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.strokeStyle = '#2E3352';
+
+    function pos(e) {
+      const r = cv.getBoundingClientRect();
+      const p = e.touches ? e.touches[0] : e;
+      return { x: p.clientX - r.left, y: p.clientY - r.top };
+    }
+    function start(e) {
+      e.preventDefault();
+      hwDrawing = true;
+      const pt = pos(e);
+      hwStrokes.push([pt]);
+      ctx.beginPath();
+      ctx.moveTo(pt.x, pt.y);
+      ctx.lineTo(pt.x + 0.1, pt.y + 0.1);
+      ctx.stroke();
+    }
+    function move(e) {
+      if (!hwDrawing) return;
+      e.preventDefault();
+      const pt = pos(e);
+      hwStrokes[hwStrokes.length - 1].push(pt);
+      ctx.lineTo(pt.x, pt.y);
+      ctx.stroke();
+    }
+    function end(e) { if (hwDrawing) { e.preventDefault(); hwDrawing = false; } }
+    cv.addEventListener('mousedown', start);
+    cv.addEventListener('mousemove', move);
+    window.addEventListener('mouseup', end);
+    cv.addEventListener('touchstart', start, { passive: false });
+    cv.addEventListener('touchmove', move, { passive: false });
+    cv.addEventListener('touchend', end, { passive: false });
+  }
+  function hwRedraw() {
+    if (!hwCanvasEl) return;
+    const ctx = hwCanvasEl.getContext('2d');
+    const dpr = window.devicePixelRatio || 1;
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, hwCanvasEl.width, hwCanvasEl.height);
+    ctx.scale(dpr, dpr);
+    hwStrokes.forEach(function (stroke) {
+      if (!stroke.length) return;
+      ctx.beginPath();
+      ctx.moveTo(stroke[0].x, stroke[0].y);
+      stroke.forEach(function (p) { ctx.lineTo(p.x, p.y); });
+      ctx.stroke();
+    });
+  }
+  function hwClear() {
+    hwStrokes = [];
+    hwRedraw();
+  }
+  function hwUndo() {
+    hwStrokes.pop();
+    hwRedraw();
+  }
+  function hwDone() {
+    if (!hwStrokes.length) { toast('先在田字格里写一写吧～'); return; }
+    const cv = $('#hw-canvas');
+    quiz.hwImage = cv ? cv.toDataURL('image/png') : '';
+    quiz.hwPendingAnswer = true;
+    renderQuizArea();
+  }
+
   function nextQuestion() {
     if (!quiz) return;
     if (quiz.i < quiz.list.length - 1) {
       quiz.i++;
       quiz.answered = false;
+      quiz.hwPendingAnswer = false;
+      quiz.hwImage = '';
       renderQuizArea();
     } else {
       finishQuiz();
@@ -338,9 +431,21 @@
     const q = quiz.list[quiz.i];
     const pct = (quiz.i / quiz.list.length * 100).toFixed(0);
     let body = '';
+    const isHW = q.fill && handwritingMode;
     if (q.fill) {
-      body = `<input class="fill-input" id="fill-answer" placeholder="在这里输入答案" autocomplete="off" value="${esc(q.userAnswer || '')}" ${quiz.answered ? 'disabled' : ''}>
-        <div style="font-size:12.5px;color:var(--ink-3);margin-top:10px">💡 提示：${esc(q.hint || q.why || '仔细想想学过的词语')}</div>`;
+      if (isHW && !quiz.answered) {
+        body = `<div class="hw-mode-tip">✍️ 用手指或鼠标在田字格里写字，不用键盘，避免输入法提示答案。</div>
+          <div class="hw-board-wrap"><div class="hw-grid"><canvas id="hw-canvas" class="hw-canvas"></canvas></div></div>
+          <div class="hw-tools">
+            <button class="btn btn-outline btn-sm" data-act="hw-undo">↶ 撤销一笔</button>
+            <button class="btn btn-outline btn-sm" data-act="hw-clear">清空重写</button>
+          </div>`;
+      } else {
+        body = `<input class="fill-input" id="fill-answer" placeholder="在这里输入答案" autocomplete="off" value="${esc(q.userAnswer || '')}" ${quiz.answered ? 'disabled' : ''}>`;
+      }
+      if (!quiz.answered) {
+        body += `<div style="margin-top:12px"><button class="hw-toggle" data-act="toggle-handwriting">${isHW ? '改用键盘输入' : '改用手写板 ✍️'}</button></div>`;
+      }
     } else {
       body = `<div class="options">${q.opts.map(function (o, i) {
         let cls = 'option';
@@ -357,12 +462,25 @@
 
     let feedback = '';
     if (quiz.answered) {
-      const ok = q.fill ? (q.userAnswer || '').replace(/\s/g, '') === q.a.replace(/\s/g, '') : quiz.userChoice === q.a;
+      const ok = q.fill ? q.selfChecked === true || (q.userAnswer || '').replace(/\s/g, '') === q.a.replace(/\s/g, '') : quiz.userChoice === q.a;
       feedback = `<div class="feedback ${ok ? 'ok' : 'no'}">
         <b>${ok ? '✅ 答对啦！' : '❌ 再看一看'}</b>
         ${ok ? (q.why ? esc(q.why) : '真棒，继续保持！') : '正确答案是：<b style="display:inline">' + esc(answerText(q)) + '</b>' + (q.why ? '<br>' + esc(q.why) : '')}
       </div>
       <div class="quiz-actions"><button class="btn btn-primary" data-act="next">${quiz.i === quiz.list.length - 1 ? '查看结果 🎊' : '下一题 →'}</button></div>`;
+    } else if (isHW && quiz.hwPendingAnswer) {
+      feedback = `<div class="hw-compare">
+        <h4>核对一下：你写的是不是这个词？</h4>
+        <div class="hw-answer">${esc(q.a)}</div>
+        ${quiz.hwImage ? '<img class="hw-mine" src="' + quiz.hwImage + '" alt="我写的字">' : ''}
+        <div style="font-size:11.5px;color:var(--ink-2);margin-top:8px">对照上面的正确答案，诚实判断自己写对了没有。</div>
+        <div class="hw-self-btns">
+          <button class="btn hw-self-yes" data-act="hw-self" data-ok="1">✅ 我写对了</button>
+          <button class="btn hw-self-no" data-act="hw-self" data-ok="0">❌ 写错了</button>
+        </div>
+      </div>`;
+    } else if (isHW) {
+      feedback = `<div class="quiz-actions"><button class="btn btn-primary" data-act="hw-done">我写好了 ✓</button></div>`;
     } else if (q.fill) {
       feedback = `<div class="quiz-actions"><button class="btn btn-primary" data-act="submit-fill">确定 ✓</button></div>`;
     }
@@ -453,6 +571,7 @@
     if (page === 'basic') renderBasic();
     else if (page === 'reading') renderReading();
     else if (page === 'drill') renderDrill();
+    hwSetup();
   }
 
   /* ---------------- 阅读提升页 ---------------- */
@@ -1098,6 +1217,22 @@
     else if (act === 'submit-fill') {
       const input = $('#fill-answer');
       submitAnswer(input ? input.value : '');
+    }
+    else if (act === 'toggle-handwriting') {
+      handwritingMode = !handwritingMode;
+      localStorage.setItem('yuduoduo_handwriting', handwritingMode ? '1' : '0');
+      if (quiz) { quiz.hwPendingAnswer = false; quiz.hwImage = ''; }
+      renderQuizArea();
+    }
+    else if (act === 'hw-undo') hwUndo();
+    else if (act === 'hw-clear') hwClear();
+    else if (act === 'hw-done') hwDone();
+    else if (act === 'hw-self') {
+      const ok = t.dataset.ok === '1';
+      quiz.list[quiz.i].selfChecked = ok;
+      quiz.hwPendingAnswer = false;
+      quiz.hwImage = '';
+      submitAnswer('', ok);
     }
     else if (act === 'next') nextQuestion();
     else if (act === 'retry') {

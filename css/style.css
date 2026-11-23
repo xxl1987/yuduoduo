@@ -464,6 +464,35 @@ input, textarea { font-family: inherit; outline: none; }
   .module-card .m-ico { font-size: 23px; }
 }
 
+/* ============ 手写板 ============ */
+.hw-mode-tip { font-size: 12px; color: var(--ink-3); margin: 8px 0 10px; line-height: 1.7; }
+.hw-toggle { font-size: 12px; color: var(--primary); text-decoration: underline; cursor: pointer; background: none; border: none; padding: 0; }
+.hw-board-wrap { position: relative; border: 2px solid var(--line); border-radius: 14px; overflow: hidden; background: #fff; touch-action: none; }
+.hw-board-wrap:focus-within { border-color: var(--primary); }
+.hw-grid {
+  position: relative; width: 100%; height: 200px;
+  background-color: #FFFEFC;
+  background-image:
+    linear-gradient(to right, transparent calc(50% - 1px), #E4D9D0 calc(50% - 1px), #E4D9D0 calc(50% + 1px), transparent calc(50% + 1px)),
+    linear-gradient(to bottom, transparent calc(50% - 1px), #E4D9D0 calc(50% - 1px), #E4D9D0 calc(50% + 1px), transparent calc(50% + 1px)),
+    linear-gradient(to right, #D9C9BC 2px, transparent 2px),
+    linear-gradient(to left, #D9C9BC 2px, transparent 2px),
+    linear-gradient(to bottom, #D9C9BC 2px, transparent 2px),
+    linear-gradient(to top, #D9C9BC 2px, transparent 2px);
+}
+.hw-canvas { position: absolute; inset: 0; width: 100%; height: 100%; cursor: crosshair; }
+.hw-tools { display: flex; gap: 8px; justify-content: flex-end; margin-top: 10px; flex-wrap: wrap; }
+.hw-compare { background: var(--green-soft); border-radius: 12px; padding: 14px 16px; margin-top: 12px; }
+.hw-compare h4 { font-size: 12.5px; color: #1E7B3C; margin-bottom: 6px; }
+.hw-answer { font-size: 26px; font-weight: 800; color: #147A38; letter-spacing: 4px; }
+.hw-mine { max-width: 100%; height: 90px; margin-top: 8px; border: 1px dashed var(--line); border-radius: 8px; background: #fff; object-fit: contain; }
+.hw-self-btns { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+.hw-self-btns .btn { flex: 1; min-width: 120px; }
+.hw-self-yes { background: var(--green); color: #fff; }
+.hw-self-yes:hover { background: #279550; }
+.hw-self-no { background: var(--accent); color: #fff; }
+.hw-self-no:hover { background: #F08B52; }
+
 /* ============ 学情画像 ============ */
 .skill-row { display: flex; align-items: center; gap: 10px; margin-bottom: 9px; }
 .skill-name { width: 116px; flex-shrink: 0; font-size: 12.5px; color: var(--ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

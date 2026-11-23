@@ -1,5 +1,5 @@
 /* 语朵朵 · Service Worker：缓存静态资源，支持离线使用 */
-const CACHE = 'yuduoduo-v3';
+const CACHE = 'yuduoduo-v4';
 const ASSETS = [
   './',
   './index.html',
