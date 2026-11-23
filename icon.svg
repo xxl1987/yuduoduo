@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#7C83FD"/>
+      <stop offset="0.55" stop-color="#9A8CFF"/>
+      <stop offset="1" stop-color="#FFB088"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#g)"/>
+  <circle cx="400" cy="96" r="58" fill="#fff" opacity="0.14"/>
+  <circle cx="90" cy="430" r="80" fill="#fff" opacity="0.10"/>
+  <text x="256" y="352" font-size="300" font-family="PingFang SC, Microsoft YaHei, sans-serif" font-weight="700" fill="#fff" text-anchor="middle">语</text>
+</svg>

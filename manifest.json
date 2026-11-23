@@ -1,0 +1,26 @@
+{
+  "name": "语朵朵 · 语文学习助手",
+  "short_name": "语朵朵",
+  "description": "小学五年级语文基础、阅读与写作提升伙伴",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#F6F7FD",
+  "theme_color": "#7C83FD",
+  "lang": "zh-CN",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "./icon-maskable.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}
