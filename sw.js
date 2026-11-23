@@ -1,5 +1,5 @@
 /* 语朵朵 · Service Worker：缓存静态资源，支持离线使用 */
-const CACHE = 'yuduoduo-v1';
+const CACHE = 'yuduoduo-v2';
 const ASSETS = [
   './',
   './index.html',
@@ -8,6 +8,10 @@ const ASSETS = [
   './js/ai.js',
   './js/app.js',
   './manifest.json',
+  './icon-192.png',
+  './icon-512.png',
+  './icon-maskable-192.png',
+  './icon-maskable-512.png',
   './icon.svg',
   './icon-maskable.svg'
 ];
